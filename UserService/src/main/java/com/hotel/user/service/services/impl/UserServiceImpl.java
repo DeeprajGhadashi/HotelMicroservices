@@ -17,6 +17,7 @@ import com.hotel.user.service.entities.Hotel;
 import com.hotel.user.service.entities.Rating;
 import com.hotel.user.service.entities.User;
 import com.hotel.user.service.exceptions.ResourceNotFoundException;
+import com.hotel.user.service.external.services.HotelService;
 import com.hotel.user.service.repositories.UserRepository;
 import com.hotel.user.service.services.UserService;
 
@@ -28,6 +29,9 @@ public class UserServiceImpl implements UserService{
 	
 	@Autowired
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	private HotelService hotelService;
 	
 	private Logger logger= LoggerFactory.getLogger(UserServiceImpl.class);
 	
@@ -60,12 +64,16 @@ public class UserServiceImpl implements UserService{
 	    List<Rating> ratings = (ratingsOfUser != null) ? Arrays.asList(ratingsOfUser) : new ArrayList<>();
 
 	    List<Rating> ratingList = ratings.stream().map(rating -> {
-	        // API call to hotel service to get the hotel
-	        ResponseEntity<Hotel> forEntity = restTemplate.getForEntity("http://HOTELSERVICE/hotels/" + rating.getHotelId(), Hotel.class);
+	        // API call to hotel service to get the hotel | used restTemplate
+	        /*
+	    	ResponseEntity<Hotel> forEntity = restTemplate.getForEntity("http://HOTELSERVICE/hotels/" + rating.getHotelId(), Hotel.class);
 	        Hotel hotel = forEntity.getBody();
-	        
 	        logger.info("Response status code: {}", forEntity.getStatusCode());
-
+           */
+	    	
+	        // API call to hotel service to get the hotel | used FeignClient
+	    	 Hotel hotel = hotelService.getHotel(rating.getHotelId());
+	    	 
 	        // Set the hotel to rating if not null
 	        if (hotel != null) {
 	            rating.setHotel(hotel);
